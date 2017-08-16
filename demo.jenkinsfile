@@ -1,0 +1,27 @@
+node('macpro31'){
+  def BUILD_DIR
+  def OTA_WEB_URL
+  stage('Checkout') {
+
+    dir('ota') {
+      git 'https://github.com/xclouder/jenkins_pipeline_u3d_demo_proj.git'
+    }
+
+    // Get some code from a GitHub repository
+    dir('ota') {
+      git 'https://github.com/xclouder/jenkins_ota_scripts.git'
+    }
+
+    BUILD_DIR = "build"
+    $OTA_WEB_URL = "ota.ezfun.cn"
+  }
+
+  stage('Build') {
+    
+    
+
+  }
+  stage('Archive') {
+    archive 'build/*.ipa, build/*.png, build/*.plist'
+  }
+}
