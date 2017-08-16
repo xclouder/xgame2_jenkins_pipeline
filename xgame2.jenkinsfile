@@ -1,4 +1,4 @@
-node('macmini29'){
+node('macpro31'){
   def BUILD_DIR
   def OTA_WEB_URL
   stage('Checkout') {
