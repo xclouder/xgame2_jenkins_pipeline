@@ -24,7 +24,7 @@ node('macpro31'){
                      ignoreExternalsOption: true, 
                      local: '.', 
                      remote: "svn://172.16.1.9/ezfun/xgame2/client/trunk"]],
-              workspaceUpdater: [$class: 'UpdateUpdater']])
+              workspaceUpdater: [$class: 'UpdateWithRevertUpdater']])
       }
     }
 
