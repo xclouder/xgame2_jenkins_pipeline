@@ -1,4 +1,4 @@
-node('macpro31'){
+node('xcode72&&unity545'){
   def BUILD_DIR
   def OTA_WEB_URL
   stage('Checkout') {
