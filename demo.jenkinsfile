@@ -21,6 +21,12 @@ node('macmini_99'){
     BUILDHOME = WORKSPACE + "/" + BUILD_DIR
   }
 
+  stage('Clean') {
+    sh """
+      rm -rf ${BUILDHOME}
+      mkdir -p ${BUILDHOME}
+    """
+  }
   stage('Build') {
     sh """
       ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod AutoBuild.BuildAPK -outPath ${BUILDHOME}/XGame2_Release.apk -buildTarget android -logFile
