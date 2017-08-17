@@ -28,6 +28,6 @@ node('macmini_99'){
     """
   }
   stage('Archive') {
-    archive 'build/*.ipa, build/*.png, build/*.plist'
+    archive "${BUILD_DIR}/*.apk"
   }
 }
