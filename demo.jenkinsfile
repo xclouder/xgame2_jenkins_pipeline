@@ -1,10 +1,14 @@
-node('xcode72&&unity545'){
-  def BUILD_DIR
-  def OTA_WEB_URL
+node('macmini_99'){
+  def BUILD_DIR = "build"
+  def OTA_WEB_URL = "ota.ezfun.cn"
+  def UNITY = "/Applications/Unity5.4.5f1/Unity.app/Contents/MacOS/Unity"
+  def PROJECTHOME
+  def BUILDHOME
+  def SRC_DIR = "src"
   stage('Checkout') {
 
     //proj source code
-    dir('ota') {
+    dir(SRC_DIR) {
       git 'https://github.com/xclouder/jenkins_pipeline_u3d_demo_proj.git'
     }
 
@@ -13,14 +17,15 @@ node('xcode72&&unity545'){
     //   git 'https://github.com/xclouder/jenkins_ota_scripts.git'
     // }
 
-    BUILD_DIR = "build"
-    $OTA_WEB_URL = "ota.ezfun.cn"
+    PROJECTHOME = WORKSPACE + "/" + SRC_DIR
+    BUILDHOME = WORKSPACE + "/" + BUILD_DIR
   }
 
   stage('Build') {
-    
+    sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod AutoBuild.BuildAPK -outPath ${BUILDHOME}/XGame2_Release.apk -buildTarget android -logFile
 
-
+    """
   }
   stage('Archive') {
     archive 'build/*.ipa, build/*.png, build/*.plist'
