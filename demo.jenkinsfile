@@ -34,6 +34,6 @@ node('macmini29'){
     """
   }
   stage('Archive') {
-    archive "build/*.apk"
+    archive "${BUILD_DIR}/*.apk"
   }
 }
