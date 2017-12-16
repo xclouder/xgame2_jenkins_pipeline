@@ -1,4 +1,4 @@
-node('macpro31'){
+node('macmini_99'){
   def BUILD_DIR
   stage('Checkout') {
 
@@ -18,8 +18,7 @@ node('macpro31'){
                      depthOption: 'infinity', 
                      ignoreExternalsOption: true, 
                      local: '.', 
-                     remote: "svn://172.16.1.9/ezfun/xgame2/client/trunk"]],
-                     //svn://172.16.1.9/ezfun/demo
+                     remote: "svn://172.16.1.9/ezfun/demo"]],
               workspaceUpdater: [$class: 'UpdateWithRevertUpdater']])
       }
     }
