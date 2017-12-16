@@ -1,8 +1,13 @@
 node('macpro31'){
-  def BUILD_DIR
+  def BUILD_DIR = "build"
+  def UNITY = "/Applications/Unity5.4.5f1/Unity.app/Contents/MacOS/Unity"
+  def PROJECTHOME
+  def BUILDHOME
+  def SRC_DIR = "xgame2"
+
   stage('Checkout') {
 
-    dir('xgame2')
+    dir(SRC_DIR)
     {
       stage('Checkout') {
         checkout([$class: 'SubversionSCM', 
@@ -24,40 +29,24 @@ node('macpro31'){
       }
     }
 
-    // Get some code from a GitHub repository
-    // dir('ota') {
-    //   git 'https://github.com/xclouder/jenkins_ota_scripts.git'
-    // }
+    PROJECTHOME = WORKSPACE + "/" + SRC_DIR
+    BUILDHOME = WORKSPACE + "/" + BUILD_DIR
+  }
 
-    BUILD_DIR = "build"
+  stage('Clean')
+  {
+    
   }
 
   stage('Build') {
-    // Run the maven build
-    //     if (isUnix()) {
-    //         sh '''
-    // #/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-    // PATH=$PATH:/usr/local/bin
-    // echo "PATH:$PATH"
-    // BUILD_DIR="build"
-    // OTA_WEB_URL="http://ota.ezfun.cn"
+    
+    sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod AutoBuild.BuildAPK -outPath ${BUILDHOME}/XGame2_Release.apk -buildTarget android -logFile
 
-    // rm -rf $BUILD_DIR
-    // mkdir -p $BUILD_DIR
-
-    // #Simulate build
-    // cp ota/OTATest.ipa $BUILD_DIR/OTATest.ipa
-
-    // cd ota
-    // sh ./ota.sh ${WORKSPACE}/${BUILD_DIR} ${BUILD_URL}artifact/$BUILD_DIR/ $OTA_WEB_URL
-    // '''
-
-    //     }
-
-    sh 'echo hello'
+    """
 
   }
   stage('Archive') {
-    archive 'build/*.ipa, build/*.png, build/*.plist'
+    archive 'build/*.apk'
   }
 }

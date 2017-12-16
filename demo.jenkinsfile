@@ -3,6 +3,7 @@ node('macmini_99'){
   def UNITY = "/Applications/Unity5.4.5f1/Unity.app/Contents/MacOS/Unity"
   def PROJECTHOME
   def BUILDHOME
+  def BUILDPATH
   def SRC_DIR = "xgame2"
   stage('Checkout') {
 
@@ -29,20 +30,54 @@ node('macmini_99'){
 
     PROJECTHOME = WORKSPACE + "/" + SRC_DIR
     BUILDHOME = WORKSPACE + "/" + BUILD_DIR
+    BUILDPATH = WORKSPACE + "/" + "export"
   }
 
-  stage('Clean') {
+  stage('Revert') {
     sh """
-      rm -rf ${BUILDHOME}
-      mkdir -p ${BUILDHOME}
+      cd ${PROJECTHOME}/tools/
+      svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf "$f"; done
     """
   }
-  stage('Build') {
-    sh """
-      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod AutoBuild.BuildAPK -outPath ${BUILDHOME}/XGame2_Release.apk -buildTarget android -logFile
 
+  stage('Clean')
+  {
+    sh """
+    rm -rf ${BUILDHOME}
+    mkdir -p ${BUILDHOME}
+    mkdir -p ${BUILDPATH}
+
+    mv ${PROJECTHOME}/Assets/PlatformPlugin ${PROJECTHOME}/..
+    rm -r ${PROJECTHOME}/Assets/Editor
+
+    cp ${PROJECTHOME}/tools/Android/nguiLib.dll ${PROJECTHOME}/Assets/Plugins/Android/
+    cp ${PROJECTHOME}/tools/Android/DataEyeDll.dll ${PROJECTHOME}/Assets/Plugins/Android/
+    cp ${PROJECTHOME}/tools/Android/XGame2Util.dll ${PROJECTHOME}/Assets/Plugins/Android/
+
+    #remove AssetBundles
+    rm -rf ${PROJECTHOME}/Assets/StreamingAssets/AssetBundles/*
     """
   }
+
+  stage('SeperateTextures')
+  {
+    sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod TextureAlphaEditor.SeperateAllTexturesRGBandAlphaChannel -buildTarget android -logFile
+    """
+  }
+
+  stage('HandleTerrainMaskTexture') {
+    sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod EZFunTextureTools.HandleTerrainMaskTexture -buildTarget android -logFile
+    """
+  }
+
+  stage('HandleTexturesToPrefab') {
+    sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod EZFunTextureTools.HandleTexturesToPrefab -buildTarget android -logFile
+    """
+  }
+
   stage('Archive') {
     archive "${BUILD_DIR}/*.apk"
   }
