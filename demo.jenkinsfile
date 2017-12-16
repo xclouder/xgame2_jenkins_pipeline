@@ -3,10 +3,10 @@ node('macmini_99'){
   def UNITY = "/Applications/Unity5.4.5f1/Unity.app/Contents/MacOS/Unity"
   def PROJECTHOME
   def BUILDHOME
-  def SRC_DIR = "src"
+  def SRC_DIR = "xgame2"
   stage('Checkout') {
 
-    dir('xgame2')
+    dir(SRC_DIR)
     {
       stage('Checkout') {
         checkout([$class: 'SubversionSCM', 
