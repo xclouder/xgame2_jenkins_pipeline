@@ -37,10 +37,8 @@ node('macpro31'){
                      depthOption: 'infinity', 
                      ignoreExternalsOption: true, 
                      local: '.', 
-                     remote: "svn://172.16.1.9/ezfun/xgame2/client/trunk"]]
-              )
-              //        remote: "svn://172.16.1.9/ezfun/xgame2/client/trunk"]],
-              // workspaceUpdater: [$class: 'UpdateWithRevertUpdater']])
+                     remote: "svn://172.16.1.9/ezfun/xgame2/client/trunk"]],
+              workspaceUpdater: [$class: 'UpdateWithRevertUpdater']])
       }
     }
   }
