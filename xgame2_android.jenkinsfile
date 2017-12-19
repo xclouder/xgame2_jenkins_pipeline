@@ -43,7 +43,7 @@ node('macpro31'){
   stage('Revert') {
     sh """
       cd ${PROJECTHOME}/tools/
-      svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf '$f'; done
+      svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf "$$f"; done
     """
   }
 
