@@ -7,8 +7,9 @@ node('macpro31'){
   def SRC_DIR = "xgame2"
   def OUT_PATH
   
-  def MPLATFORM = "tiantuo_android"
-  def MPACKAGENAME = "tiantuo_other"
+  //define by jenkins paramters
+  // def MPLATFORM = "tiantuo_android"
+  // def MPACKAGENAME = "tiantuo_other"
 
   stage('PrepareEnv')
   {
@@ -117,7 +118,7 @@ node('macpro31'){
 
   stage('BuildAndroidProject') {
     sh """
-      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod AutoBuild.BuildAndroidABAPK -outPath ${OUT_PATH} -buildTarget android -logFile
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod AutoBuild.BuildAndroidABAPK -outPath ${OUT_PATH} -buildTarget android U3DAllowDebugging=${U3DAllowDebugging} U3DDevelopment=${U3DDevelopment} U3DConnectWithProfiler=${U3DConnectWithProfiler} U3DGoogleProject=${IS_GOOGLE_PRO} ProjectName=${PROJECT_NAME} U3DUSE_AB=${USE_AB} -logFile
     """
   }
 
@@ -134,7 +135,7 @@ node('macpro31'){
   }
 
 
-  stage('MoveResourceBack') {
+  stage('Gradle Build') {
     sh """
     cd ${PROJECTHOME}/tools
     echo ${MPLATFORM}
