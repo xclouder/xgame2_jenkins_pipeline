@@ -1,4 +1,4 @@
-node('macmini_27'){
+node('macmini_27', 'macmini29'){
   def BUILD_DIR = "build"
   def UNITY
   def PROJECTHOME
