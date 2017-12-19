@@ -1,6 +1,6 @@
 node('macpro31'){
   def BUILD_DIR = "build"
-  def UNITY = $UNITY_545 + "/Contents/MacOS/Unity"
+  def UNITY = ${UNITY_545} + "/Contents/MacOS/Unity"
   def PROJECTHOME
   def BUILDHOME
   def BUILDPATH
