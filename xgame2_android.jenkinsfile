@@ -7,6 +7,7 @@ node('macpro31'){
   def SRC_DIR = "xgame2"
   def OUT_PATH
   def IS_GOOGLE_PRO = true
+  def PROJECT_NAME = "X2"
   
   //define by jenkins paramters
   // def MPLATFORM = "tiantuo_android"
