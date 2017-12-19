@@ -37,9 +37,10 @@ node('macpro31'){
                      depthOption: 'infinity', 
                      ignoreExternalsOption: true, 
                      local: '.', 
-                     remote: "svn://172.16.1.9/ezfun/xgame2/client/trunk"]],
-                     //svn://172.16.1.9/ezfun/demo
-              workspaceUpdater: [$class: 'UpdateWithRevertUpdater']])
+                     remote: "svn://172.16.1.9/ezfun/xgame2/client/trunk"]]
+              )
+              //        remote: "svn://172.16.1.9/ezfun/xgame2/client/trunk"]],
+              // workspaceUpdater: [$class: 'UpdateWithRevertUpdater']])
       }
     }
   }
@@ -47,7 +48,7 @@ node('macpro31'){
   stage('Revert') {
     sh """
       cd ${PROJECTHOME}/tools/
-      svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf '\$f'; done
+      svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf \"\$f\"; done
     """
   }
 
