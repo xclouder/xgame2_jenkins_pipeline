@@ -10,6 +10,13 @@ node('macpro31'){
   def MPLATFORM = "tiantuo_android"
   def MPACKAGENAME = "tiantuo_other"
 
+  stage('Test')
+  {
+    """
+    echo $USE_AB
+    """
+  }
+
   stage('Checkout') {
 
     dir(SRC_DIR)
@@ -58,7 +65,7 @@ node('macpro31'){
     rm -r ${PROJECTHOME}/Assets/Editor
 
     cp ${PROJECTHOME}/tools/Android/nguiLib.dll ${PROJECTHOME}/Assets/Plugins/Android/
-    cp ${PROJECTHOME}/tools/Android/DataEyeDll.dll ${PROJECTHOME}/Assets/Plugins/Android/
+    #cp ${PROJECTHOME}/tools/Android/DataEyeDll.dll ${PROJECTHOME}/Assets/Plugins/Android/
     cp ${PROJECTHOME}/tools/Android/XGame2Util.dll ${PROJECTHOME}/Assets/Plugins/Android/
 
     #remove AssetBundles
