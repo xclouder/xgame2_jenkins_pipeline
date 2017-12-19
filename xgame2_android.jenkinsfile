@@ -3,7 +3,12 @@ node('macpro31'){
   def UNITY = "/Applications/Unity5.4.5f1/Unity.app/Contents/MacOS/Unity"
   def PROJECTHOME
   def BUILDHOME
+  def BUILDPATH
   def SRC_DIR = "xgame2"
+  def OUT_PATH
+  
+  def MPLATFORM = "tiantuo_android"
+  def MPACKAGENAME = "tiantuo_other"
 
   stage('Checkout') {
 
@@ -31,21 +36,112 @@ node('macpro31'){
 
     PROJECTHOME = WORKSPACE + "/" + SRC_DIR
     BUILDHOME = WORKSPACE + "/" + BUILD_DIR
+    BUILDPATH = WORKSPACE + "/" + "export"
+    OUT_PATH = PROJECTHOME + "/tools/Builds"
+  }
+
+  stage('Revert') {
+    sh """
+      cd ${PROJECTHOME}/tools/
+      svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf "$f"; done
+    """
   }
 
   stage('Clean')
   {
-    
-  }
-
-  stage('Build') {
-    
     sh """
-      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod AutoBuild.BuildAPK -outPath ${BUILDHOME}/XGame2_Release.apk -buildTarget android -logFile
+    rm -rf ${BUILDHOME}
+    mkdir -p ${BUILDHOME}
+    mkdir -p ${BUILDPATH}
 
+    mv ${PROJECTHOME}/Assets/PlatformPlugin ${PROJECTHOME}/..
+    rm -r ${PROJECTHOME}/Assets/Editor
+
+    cp ${PROJECTHOME}/tools/Android/nguiLib.dll ${PROJECTHOME}/Assets/Plugins/Android/
+    cp ${PROJECTHOME}/tools/Android/DataEyeDll.dll ${PROJECTHOME}/Assets/Plugins/Android/
+    cp ${PROJECTHOME}/tools/Android/XGame2Util.dll ${PROJECTHOME}/Assets/Plugins/Android/
+
+    #remove AssetBundles
+    rm -rf ${PROJECTHOME}/Assets/StreamingAssets/AssetBundles/*
     """
-
   }
+
+  stage('SeperateTextures')
+  {
+    sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod TextureAlphaEditor.SeperateAllTexturesRGBandAlphaChannel -buildTarget android -logFile
+    """
+  }
+
+  stage('HandleTerrainMaskTexture') {
+    sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod EZFunTextureTools.HandleTerrainMaskTexture -buildTarget android -logFile
+    """
+  }
+
+  stage('HandleTexturesToPrefab') {
+    sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod EZFunTextureTools.HandleTexturesToPrefab -buildTarget android -logFile
+    """
+  }
+
+  stage('BuildAssetBundle') {
+    sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildAllAssetBundleAndroid -buildTarget android -logFile
+    """
+  }
+
+  stage('BuildAssetBundle') {
+    sh """
+    #remove Resources that will exist in AssetBundle
+    rm -rf ${PROJECTHOME}/tools/Builds/Others/*
+    rm -rf ${PROJECTHOME}/tools/Builds/Public/*
+    rm -rf ${PROJECTHOME}/tools/Builds/X2/*
+    mv -f ${PROJECTHOME}/Assets/XGame/Resources ${PROJECTHOME}/tools/Builds/Others/
+
+    #donot mv scene
+    #mkdir -p ${PROJECTHOME}/Assets/XGame/Resources
+    #mv -f ${PROJECTHOME}/tools/Builds/Others/Resources/Scene ${PROJECTHOME}/Assets/XGame/Resources/
+    #end
+    
+    mv -f ${PROJECTHOME}/Assets/uLua  ${PROJECTHOME}/tools/Builds/Others/
+    mv -f ${PROJECTHOME}/Assets/XGame/Script  ${PROJECTHOME}/tools/Builds/Others/
+    mv -f ${PROJECTHOME}/Assets/XGame/Editor  ${PROJECTHOME}/tools/Builds/Others/
+    mv -f ${PROJECTHOME}/Assets/XGame/Public/Editor  ${PROJECTHOME}/tools/Builds/Public/
+    mv -f ${PROJECTHOME}/Assets/XGame/Public/Scripts  ${PROJECTHOME}/tools/Builds/Public/
+    """
+  }
+
+  stage('BuildAndroidProject') {
+    sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod AutoBuild.BuildAndroidABAPK -outPath ${OUT_PATH} -buildTarget android -logFile
+    """
+  }
+
+  stage('MoveResourceBack') {
+    sh """
+    #restore Resources removed for build AssetBundle
+    mv -f ${PROJECTHOME}/tools/Builds/Others/Resources ${PROJECTHOME}/Assets/XGame/ 
+    mv -f ${PROJECTHOME}/tools/Builds/Others/uLua ${PROJECTHOME}/Assets/  
+    mv -f ${PROJECTHOME}/tools/Builds/Others/Script ${PROJECTHOME}/Assets/XGame/ 
+    mv -f ${PROJECTHOME}/tools/Builds/Others/Editor ${PROJECTHOME}/Assets/XGame/  
+    mv -f ${PROJECTHOME}/tools/Builds/Public/Editor ${PROJECTHOME}/Assets/XGame/Public/
+    mv -f ${PROJECTHOME}/tools/Builds/Public/Scripts ${PROJECTHOME}/Assets/XGame/Public/
+    """
+  }
+
+
+  stage('MoveResourceBack') {
+    sh """
+    cd ${PROJECTHOME}/tools
+    echo ${MPLATFORM}
+    echo ${MPACKAGENAME}
+    python build_pack.py ${MPLATFORM} ${MPACKAGENAME}
+    cp -f ${PROJECTHOME}/tools/SDK/${MPLATFORM}/app/build/outputs/apk/app-release.apk $BUILDHOME/XGame2_Android_${BUILD_NUMBER}.apk
+    mv -f ${PROJECTHOME}/tools/SDK/${MPLATFORM} ${BUILDPATH}/
+    """
+  }
+
   stage('Archive') {
     archive 'build/*.apk'
   }
