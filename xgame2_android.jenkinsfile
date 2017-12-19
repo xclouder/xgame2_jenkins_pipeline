@@ -10,6 +10,15 @@ node('macpro31'){
   def MPLATFORM = "tiantuo_android"
   def MPACKAGENAME = "tiantuo_other"
 
+  stage('PrepareEnv')
+  {
+    PROJECTHOME = WORKSPACE + "/" + SRC_DIR
+    BUILDHOME = WORKSPACE + "/" + BUILD_DIR
+    BUILDPATH = WORKSPACE + "/" + "export"
+    OUT_PATH = PROJECTHOME + "/tools/Builds"
+    UNITY = UNITY_545 + "/Contents/MacOS/Unity"
+  }
+
   stage('Checkout') {
 
     dir(SRC_DIR)
@@ -33,12 +42,6 @@ node('macpro31'){
               workspaceUpdater: [$class: 'UpdateWithRevertUpdater']])
       }
     }
-
-    PROJECTHOME = WORKSPACE + "/" + SRC_DIR
-    BUILDHOME = WORKSPACE + "/" + BUILD_DIR
-    BUILDPATH = WORKSPACE + "/" + "export"
-    OUT_PATH = PROJECTHOME + "/tools/Builds"
-    UNITY = ${UNITY_545} + "/Contents/MacOS/Unity"
   }
 
   stage('Revert') {
