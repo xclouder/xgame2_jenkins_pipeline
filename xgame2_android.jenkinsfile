@@ -1,6 +1,6 @@
 node('macpro31'){
   def BUILD_DIR = "build"
-  def UNITY = ${UNITY_545} + "/Contents/MacOS/Unity"
+  def UNITY
   def PROJECTHOME
   def BUILDHOME
   def BUILDPATH
@@ -9,13 +9,6 @@ node('macpro31'){
   
   def MPLATFORM = "tiantuo_android"
   def MPACKAGENAME = "tiantuo_other"
-
-  stage('Test')
-  {
-    """
-    echo $USE_AB
-    """
-  }
 
   stage('Checkout') {
 
@@ -45,6 +38,7 @@ node('macpro31'){
     BUILDHOME = WORKSPACE + "/" + BUILD_DIR
     BUILDPATH = WORKSPACE + "/" + "export"
     OUT_PATH = PROJECTHOME + "/tools/Builds"
+    UNITY = ${UNITY_545} + "/Contents/MacOS/Unity"
   }
 
   stage('Revert') {
