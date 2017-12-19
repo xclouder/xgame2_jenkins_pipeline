@@ -94,7 +94,7 @@ node('macmini_27'){
     """
   }
 
-  stage('BuildAssetBundle') {
+  stage('RestoreResources') {
     sh """
     #remove Resources that will exist in AssetBundle
     rm -rf ${PROJECTHOME}/tools/Builds/Others/*
