@@ -43,7 +43,7 @@ node('macpro31'){
   stage('Revert') {
     sh """
       cd ${PROJECTHOME}/tools/
-      svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf "\$f"; done
+      svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf '\$f'; done
     """
   }
 
@@ -54,7 +54,7 @@ node('macpro31'){
     mkdir -p ${BUILDHOME}
     mkdir -p ${BUILDPATH}
 
-    mv ${PROJECTHOME}/Assets/PlatformPlugin ${PROJECTHOME}/..
+    #mv ${PROJECTHOME}/Assets/PlatformPlugin ${PROJECTHOME}/..
     rm -r ${PROJECTHOME}/Assets/Editor
 
     cp ${PROJECTHOME}/tools/Android/nguiLib.dll ${PROJECTHOME}/Assets/Plugins/Android/
