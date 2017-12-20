@@ -144,6 +144,8 @@ node('macpro31'){
     echo ${MPACKAGENAME}
     python build_pack.py ${MPLATFORM} ${MPACKAGENAME}
     cp -f ${PROJECTHOME}/tools/SDK/${MPLATFORM}/app/build/outputs/apk/app-release.apk $BUILDHOME/XGame2_Android_${BUILD_NUMBER}.apk
+
+    rm -rf ${BUILDPATH}
     mv -f ${PROJECTHOME}/tools/SDK/${MPLATFORM} ${BUILDPATH}/
     """
   }
