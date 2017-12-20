@@ -1,4 +1,4 @@
-node('macmini29'){
+node('macpro31'){
   def BUILD_DIR = "build"
   def UNITY
   def PROJECTHOME
@@ -40,7 +40,7 @@ node('macmini29'){
                      depthOption: 'infinity', 
                      ignoreExternalsOption: true, 
                      local: '.', 
-                     remote: "svn://172.16.1.9/ezfun/xgame2/client/trunk"]],
+                     remote: "svn://172.16.1.9/ezfun/xgame2/client/branchs/openversion_0_2_0"]],
               workspaceUpdater: [$class: 'UpdateWithRevertUpdater']])
       }
     }
