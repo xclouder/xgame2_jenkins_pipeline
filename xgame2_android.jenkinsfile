@@ -10,7 +10,7 @@ node('unity545 && android'){
   def OUT_PATH
   def IS_GOOGLE_PRO = true
   def PROJECT_NAME = "X2"
-  
+
   //define by jenkins paramters
   // def MPLATFORM = "tiantuo_android"
   // def MPACKAGENAME = "tiantuo_other"
@@ -92,7 +92,7 @@ node('unity545 && android'){
 
   stage('BuildAssetBundle') {
 
-    if (USE_AB == true)
+    if (USE_AB == "true")
     {
       sh """
         ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildAllAssetBundleAndroid -buildTarget android -logFile
@@ -106,7 +106,7 @@ node('unity545 && android'){
 
   stage('MoveOutResources') {
 
-    if (USE_AB == true)
+    if (USE_AB == "true")
     {
       sh """
       #remove Resources that will exist in AssetBundle
@@ -136,7 +136,7 @@ node('unity545 && android'){
   stage('BuildAndroidProject') {
 
     def buildAPKMethod = "BuildAndroidABAPK"
-    if (X2_DEBUG == true)
+    if (X2_DEBUG == "true")
     {
       buildAPKMethod = "BuildAndroidABAPKDebug"
     }
@@ -147,7 +147,7 @@ node('unity545 && android'){
   }
 
   stage('MoveResourceBack') {
-    if (USE_AB == true)
+    if (USE_AB == "true")
     {
       sh """
       #restore Resources removed for build AssetBundle
@@ -172,7 +172,7 @@ node('unity545 && android'){
     def buildPackMode = "release"
     def archiveNamePrefix = "XGame2_Android"
 
-    if (X2_DEBUG == true)
+    if (X2_DEBUG == "true")
     {
       finalApkName = "app-debug"
       buildPackMode = "debug"
