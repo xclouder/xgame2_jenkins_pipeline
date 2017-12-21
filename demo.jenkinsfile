@@ -5,6 +5,8 @@ node('macmini_99'){
   def BUILDHOME
   def BUILDPATH
   def SRC_DIR = "xgame2"
+
+  /*
   stage('Checkout') {
 
     dir(SRC_DIR)
@@ -81,4 +83,15 @@ node('macmini_99'){
   stage('Archive') {
     archive "${BUILD_DIR}/*.apk"
   }
+  */
+  stage('Checkout') {
+    if (USE_AB)
+    {
+      print("use ab")
+    }
+    else{
+      print("not use ab")
+    }
+  }
+
 }
