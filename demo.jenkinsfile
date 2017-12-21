@@ -85,7 +85,7 @@ node('macmini_99'){
   }
   */
   stage('Checkout') {
-    USE_AB.getClass().toString()
+    print("type:" + USE_AB.getClass().toString())
     if (USE_AB == "true")
     {
       print("use ab")
