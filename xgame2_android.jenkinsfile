@@ -88,30 +88,46 @@ node('macpro31'){
   }
 
   stage('BuildAssetBundle') {
-    sh """
-      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildAllAssetBundleAndroid -buildTarget android -logFile
-    """
+
+    if (USE_AB)
+    {
+      sh """
+        ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildAllAssetBundleAndroid -buildTarget android -logFile
+      """
+    }
+    else
+    {
+      println("USE_AB==false, ignore")
+    }
   }
 
-  stage('RestoreResources') {
-    sh """
-    #remove Resources that will exist in AssetBundle
-    rm -rf ${PROJECTHOME}/tools/Builds/Others/*
-    rm -rf ${PROJECTHOME}/tools/Builds/Public/*
-    rm -rf ${PROJECTHOME}/tools/Builds/X2/*
-    mv -f ${PROJECTHOME}/Assets/XGame/Resources ${PROJECTHOME}/tools/Builds/Others/
+  stage('MoveOutResources') {
 
-    #donot mv scene
-    #mkdir -p ${PROJECTHOME}/Assets/XGame/Resources
-    #mv -f ${PROJECTHOME}/tools/Builds/Others/Resources/Scene ${PROJECTHOME}/Assets/XGame/Resources/
-    #end
-    
-    mv -f ${PROJECTHOME}/Assets/uLua  ${PROJECTHOME}/tools/Builds/Others/
-    mv -f ${PROJECTHOME}/Assets/XGame/Script  ${PROJECTHOME}/tools/Builds/Others/
-    mv -f ${PROJECTHOME}/Assets/XGame/Editor  ${PROJECTHOME}/tools/Builds/Others/
-    mv -f ${PROJECTHOME}/Assets/XGame/Public/Editor  ${PROJECTHOME}/tools/Builds/Public/
-    mv -f ${PROJECTHOME}/Assets/XGame/Public/Scripts  ${PROJECTHOME}/tools/Builds/Public/
-    """
+    if (USE_AB)
+    {
+      sh """
+      #remove Resources that will exist in AssetBundle
+      rm -rf ${PROJECTHOME}/tools/Builds/Others/*
+      rm -rf ${PROJECTHOME}/tools/Builds/Public/*
+      rm -rf ${PROJECTHOME}/tools/Builds/X2/*
+      mv -f ${PROJECTHOME}/Assets/XGame/Resources ${PROJECTHOME}/tools/Builds/Others/
+
+      #donot mv scene
+      #mkdir -p ${PROJECTHOME}/Assets/XGame/Resources
+      #mv -f ${PROJECTHOME}/tools/Builds/Others/Resources/Scene ${PROJECTHOME}/Assets/XGame/Resources/
+      #end
+      
+      mv -f ${PROJECTHOME}/Assets/uLua  ${PROJECTHOME}/tools/Builds/Others/
+      mv -f ${PROJECTHOME}/Assets/XGame/Script  ${PROJECTHOME}/tools/Builds/Others/
+      mv -f ${PROJECTHOME}/Assets/XGame/Editor  ${PROJECTHOME}/tools/Builds/Others/
+      mv -f ${PROJECTHOME}/Assets/XGame/Public/Editor  ${PROJECTHOME}/tools/Builds/Public/
+      mv -f ${PROJECTHOME}/Assets/XGame/Public/Scripts  ${PROJECTHOME}/tools/Builds/Public/
+      """
+    }
+    else
+    {
+      println("USE_AB==false, ignore")
+    }
   }
 
   stage('BuildAndroidProject') {
@@ -128,15 +144,22 @@ node('macpro31'){
   }
 
   stage('MoveResourceBack') {
-    sh """
-    #restore Resources removed for build AssetBundle
-    mv -f ${PROJECTHOME}/tools/Builds/Others/Resources ${PROJECTHOME}/Assets/XGame/ 
-    mv -f ${PROJECTHOME}/tools/Builds/Others/uLua ${PROJECTHOME}/Assets/  
-    mv -f ${PROJECTHOME}/tools/Builds/Others/Script ${PROJECTHOME}/Assets/XGame/ 
-    mv -f ${PROJECTHOME}/tools/Builds/Others/Editor ${PROJECTHOME}/Assets/XGame/  
-    mv -f ${PROJECTHOME}/tools/Builds/Public/Editor ${PROJECTHOME}/Assets/XGame/Public/
-    mv -f ${PROJECTHOME}/tools/Builds/Public/Scripts ${PROJECTHOME}/Assets/XGame/Public/
-    """
+    if (USE_AB)
+    {
+      sh """
+      #restore Resources removed for build AssetBundle
+      mv -f ${PROJECTHOME}/tools/Builds/Others/Resources ${PROJECTHOME}/Assets/XGame/ 
+      mv -f ${PROJECTHOME}/tools/Builds/Others/uLua ${PROJECTHOME}/Assets/  
+      mv -f ${PROJECTHOME}/tools/Builds/Others/Script ${PROJECTHOME}/Assets/XGame/ 
+      mv -f ${PROJECTHOME}/tools/Builds/Others/Editor ${PROJECTHOME}/Assets/XGame/  
+      mv -f ${PROJECTHOME}/tools/Builds/Public/Editor ${PROJECTHOME}/Assets/XGame/Public/
+      mv -f ${PROJECTHOME}/tools/Builds/Public/Scripts ${PROJECTHOME}/Assets/XGame/Public/
+      """
+    }
+    else
+    {
+      println("USE_AB==false, ignore")
+    }
   }
 
 
