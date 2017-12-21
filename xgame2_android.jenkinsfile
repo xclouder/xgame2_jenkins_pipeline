@@ -90,7 +90,7 @@ node('macpro34'){
 
   stage('BuildAssetBundle') {
 
-    if (USE_AB)
+    if (USE_AB == true)
     {
       sh """
         ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildAllAssetBundleAndroid -buildTarget android -logFile
@@ -104,7 +104,7 @@ node('macpro34'){
 
   stage('MoveOutResources') {
 
-    if (USE_AB)
+    if (USE_AB == true)
     {
       sh """
       #remove Resources that will exist in AssetBundle
@@ -134,7 +134,7 @@ node('macpro34'){
   stage('BuildAndroidProject') {
 
     def buildAPKMethod = "BuildAndroidABAPK"
-    if (X2_DEBUG)
+    if (X2_DEBUG == true)
     {
       buildAPKMethod = "BuildAndroidABAPKDebug"
     }
@@ -145,7 +145,7 @@ node('macpro34'){
   }
 
   stage('MoveResourceBack') {
-    if (USE_AB)
+    if (USE_AB == true)
     {
       sh """
       #restore Resources removed for build AssetBundle
@@ -170,7 +170,7 @@ node('macpro34'){
     def buildPackMode = "release"
     def archiveNamePrefix = "XGame2_Android"
 
-    if (X2_DEBUG)
+    if (X2_DEBUG == true)
     {
       finalApkName = "app-debug"
       buildPackMode = "debug"
