@@ -164,7 +164,7 @@ node('macpro31'){
   }
 
 
-  stage('Gradle Build') {
+  stage('GradleBuild') {
 
     def finalApkName = "app-release"
     def buildPackMode = "release"
