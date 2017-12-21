@@ -13,6 +13,7 @@ node('macpro31'){
   // def MPLATFORM = "tiantuo_android"
   // def MPACKAGENAME = "tiantuo_other"
   //def X2_DEBUG = false
+  //def PROJ_REPO_URL = "svn://...."
 
   stage('PrepareEnv')
   {
@@ -41,7 +42,7 @@ node('macpro31'){
                      depthOption: 'infinity', 
                      ignoreExternalsOption: true, 
                      local: '.', 
-                     remote: "svn://172.16.1.9/ezfun/xgame2/client/branchs/openversion_0_2_0"]],
+                     remote: "${PROJ_REPO_URL}"]],
               workspaceUpdater: [$class: 'UpdateWithRevertUpdater']])
       }
     }
@@ -167,10 +168,13 @@ node('macpro31'){
 
     def finalApkName = "app-release"
     def buildPackMode = "release"
+    def archiveNamePrefix = "XGame2_Android"
+
     if (X2_DEBUG)
     {
       finalApkName = "app-debug"
       buildPackMode = "debug"
+      archiveNamePrefix = "XGame2_Android_Debug"
     }
     
     sh """
@@ -178,7 +182,7 @@ node('macpro31'){
     echo ${MPLATFORM}
     echo ${MPACKAGENAME}
     python build_pack.py ${MPLATFORM} ${MPACKAGENAME} ${buildPackMode}
-    cp -f ${PROJECTHOME}/tools/SDK/${MPLATFORM}/app/build/outputs/apk/${finalApkName}.apk ${BUILDHOME}/XGame2_Android_${BUILD_NUMBER}.apk
+    cp -f ${PROJECTHOME}/tools/SDK/${MPLATFORM}/app/build/outputs/apk/${finalApkName}.apk ${BUILDHOME}/${archiveNamePrefix}_${BUILD_NUMBER}.apk
 
     rm -rf ${BUILDPATH}
     mv -f ${PROJECTHOME}/tools/SDK/${MPLATFORM} ${BUILDPATH}/
