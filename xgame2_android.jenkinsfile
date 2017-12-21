@@ -12,6 +12,7 @@ node('macpro31'){
   //define by jenkins paramters
   // def MPLATFORM = "tiantuo_android"
   // def MPACKAGENAME = "tiantuo_other"
+  //def X2_DEBUG = false
 
   stage('PrepareEnv')
   {
@@ -79,14 +80,9 @@ node('macpro31'){
     """
   }
 
-  stage('HandleTerrainMaskTexture') {
+  stage('Handle TerrainMaskTexture TexturesToPrefab') {
     sh """
       ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod EZFunTextureTools.HandleTerrainMaskTexture -buildTarget android -logFile
-    """
-  }
-
-  stage('HandleTexturesToPrefab') {
-    sh """
       ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod EZFunTextureTools.HandleTexturesToPrefab -buildTarget android -logFile
     """
   }
@@ -119,8 +115,15 @@ node('macpro31'){
   }
 
   stage('BuildAndroidProject') {
+
+    def buildAPKMethod = "BuildAndroidABAPK"
+    if (X2_DEBUG)
+    {
+      buildAPKMethod = "BuildAndroidABAPKDebug"
+    }
+
     sh """
-      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod AutoBuild.BuildAndroidABAPK -outPath ${OUT_PATH} -buildTarget android U3DAllowDebugging=${U3DAllowDebugging} U3DDevelopment=${U3DDevelopment} U3DConnectWithProfiler=${U3DConnectWithProfiler} U3DGoogleProject=${IS_GOOGLE_PRO} ProjectName=${PROJECT_NAME} U3DUSE_AB=${USE_AB} -logFile
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod AutoBuild.${buildAPKMethod} -outPath ${OUT_PATH} -buildTarget android U3DAllowDebugging=${U3DAllowDebugging} U3DDevelopment=${U3DDevelopment} U3DConnectWithProfiler=${U3DConnectWithProfiler} U3DGoogleProject=${IS_GOOGLE_PRO} ProjectName=${PROJECT_NAME} U3DUSE_AB=${USE_AB} -logFile
     """
   }
 
@@ -138,19 +141,28 @@ node('macpro31'){
 
 
   stage('Gradle Build') {
+
+    def finalApkName = "app-release"
+    def buildPackMode = "release"
+    if (X2_DEBUG)
+    {
+      finalApkName = "app-debug"
+      buildPackMode = "debug"
+    }
+    
     sh """
     cd ${PROJECTHOME}/tools
     echo ${MPLATFORM}
     echo ${MPACKAGENAME}
-    python build_pack.py ${MPLATFORM} ${MPACKAGENAME}
-    cp -f ${PROJECTHOME}/tools/SDK/${MPLATFORM}/app/build/outputs/apk/app-release.apk $BUILDHOME/XGame2_Android_${BUILD_NUMBER}.apk
+    python build_pack.py ${MPLATFORM} ${MPACKAGENAME} ${buildPackMode}
+    cp -f ${PROJECTHOME}/tools/SDK/${MPLATFORM}/app/build/outputs/apk/${finalApkName}.apk ${BUILDHOME}/XGame2_Android_${BUILD_NUMBER}.apk
 
     rm -rf ${BUILDPATH}
     mv -f ${PROJECTHOME}/tools/SDK/${MPLATFORM} ${BUILDPATH}/
     """
   }
 
-  stage('Archive') {
+  stage('FinalArchive') {
     archive 'build/*.apk'
   }
 }
