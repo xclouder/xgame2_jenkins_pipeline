@@ -102,7 +102,7 @@ node('macmini_99'){
 
     sh """
     touch a.test
-    svn import a.test svn://172.16.1.9/ezfun/xgame2/build/dailybuild/android -m "Test import"
+    svn import a.test svn://172.16.1.9/ezfun/xgame2/build/dailybuild/android/a.test -m "Test import"
     """
   }
 
