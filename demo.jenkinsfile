@@ -85,10 +85,6 @@ node('macmini_99'){
   }
   */
 
-  parameters {
-    booleanParam(defaultValue: true, description: '', name: 'userFlag')
-  }
-
   stage('Checkout') {
     print("type:" + USE_AB.getClass().toString())
     if (USE_AB == "true")
@@ -98,6 +94,16 @@ node('macmini_99'){
     else{
       print("not use ab")
     }
+  }
+
+  stage('Publish')
+  {
+    print ("publish...")
+
+    sh """
+    touch a.test
+    svn import a.test svn://172.16.1.9/ezfun/xgame2/build/dailybuild/android -m "Test import"
+    """
   }
 
 }
