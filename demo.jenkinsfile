@@ -85,7 +85,7 @@ node('macmini_99'){
   }
   */
   stage('Checkout') {
-    if (USE_AB == true)
+    if (assert USE_AB)
     {
       print("use ab")
     }
