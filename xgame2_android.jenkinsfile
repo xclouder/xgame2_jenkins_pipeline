@@ -1,4 +1,4 @@
-node('unity545 && android'){
+node('unity564 && android'){
   def BUILD_DIR = "build"
   def UNITY
   def PROJECTHOME
@@ -23,7 +23,7 @@ node('unity545 && android'){
     BUILDHOME = WORKSPACE + "/" + BUILD_DIR
     BUILDPATH = WORKSPACE + "/" + "export"
     OUT_PATH = PROJECTHOME + "/tools/Builds"
-    UNITY = UNITY_545 + "/Contents/MacOS/Unity"
+    UNITY = UNITY_564 + "/Contents/MacOS/Unity"
   }
 
   stage('Checkout') {
