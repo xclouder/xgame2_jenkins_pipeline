@@ -73,6 +73,9 @@ node('unity564 && android'){
 
     #remove AssetBundles
     rm -rf ${PROJECTHOME}/Assets/StreamingAssets/AssetBundles/*
+
+    #remove UnitTests
+    rm -rf ${PROJECTHOME}/Assets/XGame/Script/UnitTests
     """
   }
 
