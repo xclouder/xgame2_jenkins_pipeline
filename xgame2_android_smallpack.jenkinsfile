@@ -16,6 +16,7 @@ node('unity564 && android'){
   // def MPACKAGENAME = "tiantuo_other"
   //def X2_DEBUG = false
   //def PROJ_REPO_URL = "svn://...."
+  //def USE_SMALL_PACK = "false"
 
   stage('PrepareEnv')
   {
@@ -97,13 +98,36 @@ node('unity564 && android'){
 
     if (USE_AB == "true")
     {
-      sh """
+      if (USE_SMALL_PACK == "true")
+      {
+        sh """
+        ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildSmallPackageAssetBundleAndroid -buildTarget android -logFile
+        """
+      }
+      else
+      {
+        sh """
         ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildAllAssetBundleAndroid -buildTarget android -logFile
-      """
+        """
+      }
+      
     }
     else
     {
       println("USE_AB==false, ignore")
+    }
+  }
+
+  stage('BuildStreammingPack') {
+    if (USE_SMALL_PACK == "true")
+    {
+      sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildStreammingPackagesAndroid -buildTarget android -logFile
+      """
+    }
+    else
+    {
+      println("USE_SMALL_PACK==false, ignore")
     }
   }
 
@@ -145,7 +169,7 @@ node('unity564 && android'){
     }
 
     sh """
-      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod AutoBuild.${buildAPKMethod} -outPath ${OUT_PATH} -buildTarget android U3DAllowDebugging=${U3DAllowDebugging} U3DDevelopment=${U3DDevelopment} U3DConnectWithProfiler=${U3DConnectWithProfiler} U3DGoogleProject=${IS_GOOGLE_PRO} ProjectName=${PROJECT_NAME} U3DUSE_AB=${USE_AB} -logFile
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod AutoBuild.${buildAPKMethod} -outPath ${OUT_PATH} -buildTarget android U3DAllowDebugging=${U3DAllowDebugging} U3DDevelopment=${U3DDevelopment} U3DConnectWithProfiler=${U3DConnectWithProfiler} U3DGoogleProject=${IS_GOOGLE_PRO} ProjectName=${PROJECT_NAME} U3DUSE_AB=${USE_AB} X2UseSmallPack=${USE_SMALL_PACK} -logFile
     """
   }
 
