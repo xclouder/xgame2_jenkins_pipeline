@@ -137,6 +137,8 @@ node('unity564 && android'){
 
       //archive the streammingPack
       sh """
+      rm ${STREAM_PACK1_PATH}/AssetBundles.manifest
+      rm ${STREAM_PACK1_PATH}/AssetBundles
       zip ${BUILDHOME}/${STREAM_PACK1_NAME}.zip ${STREAM_PACK1_PATH}/* -r
       """
     }
