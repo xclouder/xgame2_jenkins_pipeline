@@ -13,7 +13,7 @@ node('unity564 && android'){
 
   def BUILD_CACHE_HOME
   def STREAM_PACK1_PATH
-  def STREAM_PACK1_NAME = "StreammingPkg1"
+  def STREAM_PACK1_NAME = "StreammingPackage1"
 
   //define by jenkins paramters
   // def MPLATFORM = "tiantuo_android"
