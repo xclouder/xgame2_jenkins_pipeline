@@ -17,6 +17,7 @@ node('unity564 && android'){
   //def X2_DEBUG = false
   //def PROJ_REPO_URL = "svn://...."
   //def USE_SMALL_PACK = "false"
+  //def BUILD_STREAM_PACK = "false"
 
   stage('PrepareEnv')
   {
@@ -119,7 +120,7 @@ node('unity564 && android'){
   }
 
   stage('BuildStreammingPack') {
-    if (USE_SMALL_PACK == "true")
+    if (BUILD_STREAM_PACK == "true")
     {
       sh """
       ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildStreammingPackagesAndroid -buildTarget android -logFile
@@ -127,7 +128,7 @@ node('unity564 && android'){
     }
     else
     {
-      println("USE_SMALL_PACK==false, ignore")
+      println("BUILD_STREAM_PACK==false, ignore")
     }
   }
 
