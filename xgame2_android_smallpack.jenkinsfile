@@ -14,6 +14,8 @@ node('unity564 && android'){
   def BUILD_CACHE_HOME
   def STREAM_PACK1_PATH
   def STREAM_PACK1_NAME = "StreammingPackage1"
+  
+  def PLATFORM = "Android"
 
   //define by jenkins paramters
   // def MPLATFORM = "tiantuo_android"
@@ -22,7 +24,8 @@ node('unity564 && android'){
   //def PROJ_REPO_URL = "svn://...."
   //def USE_SMALL_PACK = "false"
   //def BUILD_STREAM_PACK = "false"
-  def PLATFORM = "Android"
+  //def BUILD_APP = "true"
+  
 
   stage('PrepareEnv')
   {
@@ -106,6 +109,12 @@ node('unity564 && android'){
 
   stage('BuildAssetBundle') {
 
+    if (BUILD_APP == "false")
+    {
+      println("BUILD_APP==false, ignore")
+      return
+    }
+
     if (USE_AB == "true")
     {
       if (USE_SMALL_PACK == "true")
@@ -150,6 +159,13 @@ node('unity564 && android'){
 
   stage('MoveOutResources') {
 
+    if (BUILD_APP == "false")
+    {
+      println("BUILD_APP==false, ignore")
+      return
+    }
+
+
     if (USE_AB == "true")
     {
       sh """
@@ -178,6 +194,12 @@ node('unity564 && android'){
   }
 
   stage('BuildAndroidProject') {
+    
+    if (BUILD_APP == "false")
+    {
+      println("BUILD_APP==false, ignore")
+      return
+    }
 
     def buildAPKMethod = "BuildAndroidABAPK"
     if (X2_DEBUG == "true")
@@ -191,6 +213,13 @@ node('unity564 && android'){
   }
 
   stage('MoveResourceBack') {
+
+    if (BUILD_APP == "false")
+    {
+      println("BUILD_APP==false, ignore")
+      return
+    }
+
     if (USE_AB == "true")
     {
       sh """
@@ -211,6 +240,12 @@ node('unity564 && android'){
 
 
   stage('GradleBuild') {
+
+    if (BUILD_APP == "false")
+    {
+      println("BUILD_APP==false, ignore")
+      return
+    }
 
     def finalApkName = "app-release"
     def buildPackMode = "release"
@@ -240,6 +275,12 @@ node('unity564 && android'){
 
   stage('Import to SVN')
   {
+    if (BUILD_APP == "false")
+    {
+      println("BUILD_APP==false, ignore")
+      return
+    }
+    
     sh """
     svn import ${BUILDHOME}/${FINAL_APK_NAME} svn://172.16.1.9/ezfun/xgame2/build/dailybuild/android/${JOB_NAME}_${FINAL_APK_NAME} -m 'jenkins build import'
     """
