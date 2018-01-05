@@ -34,7 +34,7 @@ node('unity564 && android'){
 
     BUILD_CACHE_HOME = PROJECTHOME + "/BuildCache"
 
-    STREAM_PACK1_PATH = BUILD_CACHE_HOME + "/" + PLATFORM + "/" + STREAM_PACK1_NAME + "/AssetBundles"
+    STREAM_PACK1_PATH = BUILD_CACHE_HOME + "/AssetBundles/" + PLATFORM + "/" + STREAM_PACK1_NAME + "/AssetBundles"
   }
 
   stage('Checkout') {
