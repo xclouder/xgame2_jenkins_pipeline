@@ -23,6 +23,7 @@ node('unity564 && android'){
   //def X2_DEBUG = false
   //def PROJ_REPO_URL = "svn://...."
   //def USE_SMALL_PACK = "false"
+  //def BUILD_SMALL_PACK_AB = "true"
   //def BUILD_STREAM_PACK = "false"
   //def BUILD_APP = "true"
   
@@ -119,9 +120,16 @@ node('unity564 && android'){
     {
       if (USE_SMALL_PACK == "true")
       {
-        sh """
-        ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildSmallPackageAssetBundleAndroid -buildTarget android -logFile
-        """
+        if (BUILD_SMALL_PACK_AB)
+        {
+          sh """
+          ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildSmallPackageAssetBundleAndroid -buildTarget android -logFile
+          """
+        }
+        else{
+          println("BUILD_SMALL_PACK_AB == false, ignore")
+        }
+        
       }
       else
       {
