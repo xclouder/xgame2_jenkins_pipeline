@@ -120,7 +120,7 @@ node('unity564 && android'){
     {
       if (USE_SMALL_PACK == "true")
       {
-        if (BUILD_SMALL_PACK_AB)
+        if (BUILD_SMALL_PACK_AB == "true")
         {
           sh """
           ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildSmallPackageAssetBundleAndroid -buildTarget android -logFile
