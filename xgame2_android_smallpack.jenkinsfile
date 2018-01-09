@@ -156,7 +156,9 @@ node('unity564 && android'){
       sh """
       rm ${STREAM_PACK1_PATH}/AssetBundles.manifest
       rm ${STREAM_PACK1_PATH}/AssetBundles
-      zip ${BUILDHOME}/${STREAM_PACK1_NAME}.zip ${STREAM_PACK1_PATH}/* -r
+
+      cd ${STREAM_PACK1_PATH}
+      zip -r ${BUILDHOME}/${STREAM_PACK1_NAME}.zip *
       """
     }
     else
