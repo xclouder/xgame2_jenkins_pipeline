@@ -69,6 +69,9 @@ node('unity564 && android'){
     sh """
       cd ${PROJECTHOME}/tools/
       svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf \"\$f\"; done
+
+      cd ${PROJECTHOME}/Assets/StreamingAssets/
+      svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf \"\$f\"; done
     """
   }
 
@@ -120,6 +123,10 @@ node('unity564 && android'){
     {
       if (USE_SMALL_PACK == "true")
       {
+        sh """
+        touch ${PROJECTHOME}/Assets/StreamingAssets/IS_SMALL_PKG
+        """
+
         if (BUILD_SMALL_PACK_AB == "true")
         {
           sh """
