@@ -191,11 +191,6 @@ node('unity564 && android'){
       rm -rf ${PROJECTHOME}/tools/Builds/Public/*
       rm -rf ${PROJECTHOME}/tools/Builds/X2/*
       mv -f ${PROJECTHOME}/Assets/XGame/Resources ${PROJECTHOME}/tools/Builds/Others/
-
-      #donot mv scene
-      #mkdir -p ${PROJECTHOME}/Assets/XGame/Resources
-      #mv -f ${PROJECTHOME}/tools/Builds/Others/Resources/Scene ${PROJECTHOME}/Assets/XGame/Resources/
-      #end
       
       mv -f ${PROJECTHOME}/Assets/uLua  ${PROJECTHOME}/tools/Builds/Others/
       mv -f ${PROJECTHOME}/Assets/XGame/Script  ${PROJECTHOME}/tools/Builds/Others/
@@ -203,10 +198,23 @@ node('unity564 && android'){
       mv -f ${PROJECTHOME}/Assets/XGame/Public/Editor  ${PROJECTHOME}/tools/Builds/Public/
       mv -f ${PROJECTHOME}/Assets/XGame/Public/Scripts  ${PROJECTHOME}/tools/Builds/Public/
       """
+
+      
     }
     else
     {
+
       println("USE_AB==false, ignore")
+
+      if (USE_SMALL_PACK == "true")
+      {
+        echo "Remove StreammingPackage Resources"
+        //donot move Resources out, but call c# script to remove SmallPackage not needed resources
+        sh """
+          ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.RemoveStreammingPackageResources -buildTarget android -logFile
+        """
+      }
+      
     }
   }
 
