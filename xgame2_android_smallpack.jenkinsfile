@@ -72,6 +72,9 @@ node('unity564 && android'){
 
       cd ${PROJECTHOME}/Assets/StreamingAssets/
       svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf \"\$f\"; done
+
+      cd ${OUT_PATH}
+      svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf \"\$f\"; done
     """
   }
 
@@ -161,7 +164,7 @@ node('unity564 && android'){
 
       //archive the streammingPack
       sh """
-      rm ${STREAM_PACK1_PATH}/AssetBundles.manifest
+      rm ${STREAM_PACK1_PATH}/*.manifest
       rm ${STREAM_PACK1_PATH}/AssetBundles
 
       cd ${STREAM_PACK1_PATH}
