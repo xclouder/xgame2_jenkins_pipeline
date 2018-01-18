@@ -118,7 +118,7 @@ node('unity564 && android'){
   {
     sh """
     ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod ResourceTools.GenResourceList -buildTarget android -logFile
-    
+
     """
 
     if (USE_SMALL_PACK == "true")
@@ -129,10 +129,9 @@ node('unity564 && android'){
     }
     else
     {
+      def PACK_RESOURCE_PATH = ${PROJECTHOME} + "/Assets/StreamingAssets/PackageResource.json"
       //remove PackageResource.json if not use SMALL_PKG
       sh """
-      PACK_RESOURCE_PATH=${PROJECTHOME}/Assets/StreamingAssets/PackageResource.json
-
       if [ -e ${PACK_RESOURCE_PATH}]
       then
           rm ${PACK_RESOURCE_PATH}
