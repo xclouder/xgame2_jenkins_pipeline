@@ -124,7 +124,7 @@ node('unity564 && android'){
     if (USE_SMALL_PACK == "true")
     {
       sh """
-      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod BuildPackageResourceConfig.Build -buildTarget android -logFile
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod SmallPkgResourceList.BuildSmallPackageResourceList -buildTarget android -logFile
       """
     }
     else
