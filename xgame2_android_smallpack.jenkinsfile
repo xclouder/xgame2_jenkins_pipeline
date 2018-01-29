@@ -97,6 +97,11 @@ node('unity564 && android'){
 
     #remove UnitTests
     rm -rf ${PROJECTHOME}/Assets/XGame/Script/UnitTests
+
+
+    #remove Unused shaders
+    rm -rf ${PROJECTHOME}/Assets/T4M
+    rm -rf ${PROJECTHOME}/Assets/T4MOBJ
     """
   }
 
