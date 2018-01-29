@@ -170,7 +170,10 @@ node('unity564 && android'){
           """
         }
         else{
-          println("BUILD_SMALL_PACK_AB == false, ignore")
+          println("BUILD_SMALL_PACK_AB == false, only build shader ab")
+          sh """
+          ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildSmallPackageShaderAssetBundleAndroid -buildTarget android -logFile
+          """
         }
         
       }
