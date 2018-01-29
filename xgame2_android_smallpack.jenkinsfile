@@ -100,8 +100,8 @@ node('unity564 && android'){
 
 
     #remove Unused shaders
-    rm -rf ${PROJECTHOME}/Assets/T4M
-    rm -rf ${PROJECTHOME}/Assets/T4MOBJ
+    #rm -rf ${PROJECTHOME}/Assets/T4M
+    #rm -rf ${PROJECTHOME}/Assets/T4MOBJ
     """
   }
 
