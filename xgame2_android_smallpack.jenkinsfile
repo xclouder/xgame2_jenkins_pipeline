@@ -137,6 +137,10 @@ node('unity564 && android'){
       sh """
       ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod SmallPkgResourceList.BuildSmallPackageResourceList -buildTarget android -logFile
       """
+
+      sh """
+      touch ${PROJECTHOME}/Assets/StreamingAssets/IS_SMALL_PKG
+      """
     }
     else
     {
@@ -165,10 +169,6 @@ node('unity564 && android'){
     {
       if (USE_SMALL_PACK == "true")
       {
-        sh """
-        touch ${PROJECTHOME}/Assets/StreamingAssets/IS_SMALL_PKG
-        """
-
         if (BUILD_SMALL_PACK_AB == "true")
         {
           sh """
