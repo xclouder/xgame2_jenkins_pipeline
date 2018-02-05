@@ -81,6 +81,8 @@ node('unity564 && android'){
     rm -rf ${BUILDHOME}
     mkdir -p ${BUILDHOME}
 
+    rm -rf ${BUILD_CACHE_HOME}
+
     #mv ${PROJECTHOME}/Assets/PlatformPlugin ${PROJECTHOME}/..
     rm -r ${PROJECTHOME}/Assets/Editor
 
