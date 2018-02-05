@@ -1,0 +1,160 @@
+node('unity564 && android'){
+  def BUILD_DIR = "build"
+  def UNITY
+  def PROJECTHOME
+  def BUILD_CACHE_HOME
+  def SRC_DIR = "xgame2"
+  def PRE_DB_DIR = "pre_db"
+  def PRE_DB_PATH
+  def PLATFORM = "Android"
+  
+  //def PROJ_REPO_URL = "svn://...."
+  //def PREV_DB_REPO_URL = "svn://...."
+  //def IS_STREAM_PKG_DELTA_AB = "false"
+
+  stage('PrepareEnv')
+  {
+    PROJECTHOME = WORKSPACE + "/" + SRC_DIR
+    BUILDHOME = WORKSPACE + "/" + BUILD_DIR
+    UNITY = UNITY_564 + "/Contents/MacOS/Unity"
+    BUILD_CACHE_HOME = PROJECTHOME + "/BuildCache"
+    PRE_DB_PATH = WORKSPACE + "/" + PRE_DB_DIR + "/AssetBundles/AssetBundles.json"
+  }
+
+  stage('Checkout') {
+
+    dir(SRC_DIR)
+    {
+      stage('Checkout Project') {
+        checkout([$class: 'SubversionSCM', 
+              additionalCredentials: [], 
+              excludedCommitMessages: '', 
+              excludedRegions: '', 
+              excludedRevprop: '', 
+              excludedUsers: 'buildbot', 
+              filterChangelog: false, 
+              ignoreDirPropChanges: false, 
+              includedRegions: '', 
+              locations: [[credentialsId: 'ba63d961-0ede-4e10-9bab-8cc08dfda439',
+                     depthOption: 'infinity', 
+                     ignoreExternalsOption: true, 
+                     local: '.', 
+                     remote: "${PROJ_REPO_URL}"]],
+              workspaceUpdater: [$class: 'UpdateWithRevertUpdater']])
+      }
+    }
+
+    dir(PRE_DB_DIR)
+    {
+      stage('Checkout Project') {
+        checkout([$class: 'SubversionSCM', 
+              additionalCredentials: [], 
+              excludedCommitMessages: '', 
+              excludedRegions: '', 
+              excludedRevprop: '', 
+              excludedUsers: 'buildbot', 
+              filterChangelog: false, 
+              ignoreDirPropChanges: false, 
+              includedRegions: '', 
+              locations: [[credentialsId: 'ba63d961-0ede-4e10-9bab-8cc08dfda439',
+                     depthOption: 'infinity', 
+                     ignoreExternalsOption: true, 
+                     local: '.', 
+                     remote: "${PREV_DB_REPO_URL}"]],
+              workspaceUpdater: [$class: 'UpdateWithRevertUpdater']])
+      }
+    }
+  }
+
+  stage('Revert') {
+    sh """
+      cd ${PROJECTHOME}/tools/
+      #svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf \"\$f\"; done
+      rm -rf *
+      svn up
+    """
+  }
+
+  stage('Clean')
+  {
+    sh """
+    rm -rf ${BUILDHOME}
+    mkdir -p ${BUILDHOME}
+
+    #mv ${PROJECTHOME}/Assets/PlatformPlugin ${PROJECTHOME}/..
+    rm -r ${PROJECTHOME}/Assets/Editor
+
+    cp ${PROJECTHOME}/tools/Android/nguiLib.dll ${PROJECTHOME}/Assets/Plugins/Android/
+    #cp ${PROJECTHOME}/tools/Android/DataEyeDll.dll ${PROJECTHOME}/Assets/Plugins/Android/
+    cp ${PROJECTHOME}/tools/Android/XGame2Util.dll ${PROJECTHOME}/Assets/Plugins/Android/
+
+    #remove AssetBundles
+    rm -rf ${PROJECTHOME}/Assets/StreamingAssets/AssetBundles/*
+
+    #remove UnitTests
+    rm -rf ${PROJECTHOME}/Assets/XGame/Script/UnitTests
+
+
+    #remove Unused shaders
+    #rm -rf ${PROJECTHOME}/Assets/T4M
+    #rm -rf ${PROJECTHOME}/Assets/T4MOBJ
+    """
+  }
+
+  stage('SeperateTextures')
+  {
+    sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod TextureAlphaEditor.SeperateAllTexturesRGBandAlphaChannel -buildTarget android -logFile
+    """
+  }
+
+  stage('Handle TerrainMaskTexture TexturesToPrefab') {
+    sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod EZFunTextureTools.HandleTerrainMaskTexture -buildTarget android -logFile
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod EZFunTextureTools.HandleTexturesToPrefab -buildTarget android -logFile
+    """
+  }
+
+  stage('GenResourceJson')
+  {
+    sh """
+    ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod ResourceTools.GenResourceList -buildTarget android -logFile
+    """
+
+    if (IS_STREAM_PKG_DELTA_AB == "true")
+    {
+      sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod SmallPkgResourceList.BuildSmallPackageResourceList -buildTarget android -logFile
+      """
+    }
+    else
+    {
+      def PACK_RESOURCE_PATH = PROJECTHOME + "/Assets/StreamingAssets/PackageResource.json"
+      //remove PackageResource.json if not use SMALL_PKG
+      sh """
+      if [ -e ${PACK_RESOURCE_PATH}]
+      then
+          rm ${PACK_RESOURCE_PATH}
+      fi
+      """
+    }
+
+  }
+
+  stage('BuildAssetBundle') {
+    sh """
+    ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildAllAssetsBundle_Update_Android_CI -previousVersionDb ${PRE_DB_PATH} -outPath ${BUILDHOME} -buildTarget android -logFile
+    """
+  }
+
+  stage('Zip')
+  {
+
+  }
+
+  stage('FinalArchive') {
+    archive 'build/*.zip'
+  }
+
+
+}
