@@ -7,13 +7,16 @@ node('macpro31'){
   def PRE_DB_DIR = "pre_db"
   def PRE_DB_PATH
   def PLATFORM = "Android"
+  def PREV_DB_URL
   
+  //def PREV_DB_URL_BASE = "svn://..."
   //def PROJ_REPO_URL = "svn://...."
-  //def PREV_DB_REPO_URL = "svn://...."
+  //def PREV_DB_TAG = "svn://...."
   //def IS_STREAM_PKG_DELTA_AB = "false"
 
   stage('PrepareEnv')
   {
+    PREV_DB_URL = PREV_DB_URL_BASE + "/" + PREV_DB_TAG
     PROJECTHOME = WORKSPACE + "/" + SRC_DIR
     BUILDHOME = WORKSPACE + "/" + BUILD_DIR
     UNITY = UNITY_564 + "/Contents/MacOS/Unity"
@@ -60,7 +63,7 @@ node('macpro31'){
                      depthOption: 'infinity', 
                      ignoreExternalsOption: true, 
                      local: '.', 
-                     remote: "${PREV_DB_REPO_URL}"]],
+                     remote: "${PREV_DB_URL}"]],
               workspaceUpdater: [$class: 'UpdateWithRevertUpdater']])
       }
     }
