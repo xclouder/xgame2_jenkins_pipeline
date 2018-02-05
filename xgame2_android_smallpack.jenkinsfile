@@ -356,7 +356,7 @@ node('unity564 && android'){
   }
 
   stage('FinalArchive') {
-    archive 'build/*.apk,build/*.zip'
+    archive 'build/*.apk,build/*.zip,xgame2/BuildCache/**/*.json'
   }
 
 }
