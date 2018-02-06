@@ -21,7 +21,7 @@ node('macpro31'){
     BUILDHOME = WORKSPACE + "/" + BUILD_DIR
     UNITY = UNITY_564 + "/Contents/MacOS/Unity"
     BUILD_CACHE_HOME = PROJECTHOME + "/BuildCache"
-    PRE_DB_PATH = WORKSPACE + "/" + PRE_DB_DIR + "/AssetBundles.json"
+    PRE_DB_PATH = WORKSPACE + "/" + PRE_DB_DIR + "/AssetDatas.json"
   }
 
   stage('Checkout') {
