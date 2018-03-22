@@ -1,0 +1,356 @@
+node('xcode92 && ios'){
+  def BUILD_DIR = "build"
+  def UNITY
+  def PROJECTHOME
+  def BUILDHOME
+  def BUILDPATH
+  def SRC_DIR = "xgame2"
+
+  def BUILD_CACHE_HOME
+  def STREAM_PACK1_PATH
+  def STREAM_PACK1_NAME = "StreammingPackage1"
+  def XCODE_PATH
+  
+  def FINAL_IPA_NAME
+  def EXPORT_PLIST_PATH
+
+  //def DEBUG
+  //def RELEASE_SIGN_CERT="iPhone Distribution: Khorgos Stellar Top Network Technology Co.,Ltd. (9X937RK78G)"
+  //def PROVISIONING_PROFILE_SPECIFIER="dfws2_adhoc_20180314"
+  
+  stage('PrepareEnv')
+  {
+    PROJECTHOME = WORKSPACE + "/" + SRC_DIR
+    BUILDHOME = WORKSPACE + "/" + BUILD_DIR
+    BUILDPATH = WORKSPACE + "/" + "export"
+    UNITY = UNITY_565 + "/Contents/MacOS/Unity"
+
+    BUILD_CACHE_HOME = PROJECTHOME + "/BuildCache"
+
+    STREAM_PACK1_PATH = BUILD_CACHE_HOME + "/AssetBundles/iOS/" + STREAM_PACK1_NAME + "/AssetBundles"
+  XCODE_PATH = XCODE_9_2 + "/Contents/Developer/usr/bin/xcodebuild"
+  ARCHIVE_PATH= BUILDHOME + "/XGame2.xcarchive"
+
+  if (MPLATFORM == "tian_tuo_ios")
+    {
+      FINAL_IPA_NAME = "x2_tiantuo_debug.ipa"
+
+      if (DEBUG == "true")
+      {
+        EXPORT_PLIST_PATH = PROJECTHOME + "/tools/iOS/x2_tiantuo_debug.plist"
+      }
+      else
+      {
+        EXPORT_PLIST_PATH = PROJECTHOME + "/tools/iOS/x2_tiantuo_adhoc.plist"
+      }
+    }
+    else
+    {
+    }
+  }
+
+  stage('Checkout') {
+
+    dir(SRC_DIR)
+    {
+      stage('Checkout Project') {
+        checkout([$class: 'SubversionSCM', 
+              additionalCredentials: [], 
+              excludedCommitMessages: '', 
+              excludedRegions: '', 
+              excludedRevprop: '', 
+              excludedUsers: 'buildbot', 
+              filterChangelog: false, 
+              ignoreDirPropChanges: false, 
+              includedRegions: '', 
+              locations: [[credentialsId: 'ba63d961-0ede-4e10-9bab-8cc08dfda439',
+                     depthOption: 'infinity', 
+                     ignoreExternalsOption: true, 
+                     local: '.', 
+                     remote: "${PROJ_REPO_URL}"]],
+              workspaceUpdater: [$class: 'UpdateWithRevertUpdater']])
+      }
+    }
+  }
+
+  stage('Revert') {
+    sh """
+    cd ${PROJECTHOME}/
+    svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf \"\$f\"; done
+  
+      cd ${PROJECTHOME}/tools/
+      svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf \"\$f\"; done
+
+      cd ${PROJECTHOME}/Assets/StreamingAssets/
+      svn status --no-ignore | grep '^[I?]' | cut -c 9- | while IFS= read -r f; do rm -rf \"\$f\"; done
+
+      """
+  }
+
+  stage('Clean')
+  {
+    sh """
+      mkdir -p ${BUILDHOME}
+      mkdir -p ${BUILDPATH}
+      
+    rm -rf ${ARCHIVE_PATH}
+    rm -rf ${BUILDHOME}/${FINAL_IPA_NAME}
+    
+      #remove AssetBundles
+      rm -rf ${PROJECTHOME}/Assets/StreamingAssets/AssetBundles/*
+      
+      #remove UnitTests
+      rm -rf ${PROJECTHOME}/Assets/XGame/Script/UnitTests
+    
+    rm -rf ${BUILDPATH}
+    mkdir -p ${BUILDPATH}
+    
+    mv ${PROJECTHOME}/tools/iOS/GameData.cf ${PROJECTHOME}/Assets/StreamingAssets/GameData.cf
+    """
+  }
+
+  stage('SeperateTextures')
+  {
+    sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod TextureAlphaEditor.SeperateAllTexturesRGBandAlphaChannel -buildTarget ios -logFile
+    """
+  }
+
+  stage('Handle TerrainMaskTexture TexturesToPrefab') {
+    sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod EZFunTextureTools.HandleTerrainMaskTexture -buildTarget ios -logFile
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod EZFunTextureTools.HandleTexturesToPrefab -buildTarget ios -logFile
+    """
+  }
+
+  stage('GenResourceJson')
+  {
+    sh """
+     ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod ResourceTools.GenResourceList -buildTarget ios -logFile
+
+    """
+
+    if (USE_SMALL_PACK == "true")
+    {
+      sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod SmallPkgResourceList.BuildSmallPackageResourceList -buildTarget ios -logFile
+      """
+
+      sh """
+      touch ${PROJECTHOME}/Assets/StreamingAssets/IS_SMALL_PKG
+      echo ${BUILD_NUMBER} > ${PROJECTHOME}/Assets/StreamingAssets/jobNum.cf
+      """
+    }
+    else
+    {
+      def PACK_RESOURCE_PATH = PROJECTHOME + "/Assets/StreamingAssets/PackageResource.json"
+      //remove PackageResource.json if not use SMALL_PKG
+      sh """
+      if [ -e ${PACK_RESOURCE_PATH}]
+      then
+          rm ${PACK_RESOURCE_PATH}
+      fi
+      """
+    }
+    
+
+  }
+
+  stage('BuildAssetBundle') {
+
+    if (BUILD_APP == "false")
+    {
+      println("BUILD_APP==false, ignore")
+      return
+    }
+
+    if (USE_AB == "true")
+    {
+      if (USE_SMALL_PACK == "true")
+      {
+        if (BUILD_SMALL_PACK_AB == "true")
+        {
+          sh """
+          ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildSmallPackageAssetBundleIOS -buildTarget ios -logFile
+          """
+        }
+        else{
+          println("BUILD_SMALL_PACK_AB == false, ignore")
+        }
+        
+      }
+      else
+      {
+        sh """
+        ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildAllAssetBundleiOS -buildTarget ios -logFile
+        """
+      }
+      
+    }
+    else
+    {
+      println("USE_AB==false, ignore")
+
+      sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildSmallPackageShaderAssetBundleIOS -buildTarget ios -logFile
+      """
+    }
+  }
+
+  stage('BuildStreammingPack') {
+    if (BUILD_STREAM_PACK == "true")
+    {
+      sh """
+      ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.BuildStreammingPackagesIOS -buildTarget ios -logFile
+      """
+
+      //archive the streammingPack
+      // rm ${STREAM_PACK1_PATH}/*.manifest
+      // rm ${STREAM_PACK1_PATH}/AssetBundles
+      sh """
+      cd ${STREAM_PACK1_PATH}
+      zip -r -0 ${BUILDHOME}/${STREAM_PACK1_NAME}.zip *
+      """
+    }
+    else
+    {
+      println("BUILD_STREAM_PACK==false, ignore")
+    }
+  }
+
+  stage('MoveOutResources') {
+
+    if (BUILD_APP == "false")
+    {
+      println("BUILD_APP==false, ignore")
+      return
+    }
+
+
+    if (USE_AB == "true")
+    {
+      sh """
+      #remove Resources that will exist in AssetBundle
+      rm -rf ${PROJECTHOME}/tools/Builds/Others/*
+      rm -rf ${PROJECTHOME}/tools/Builds/Public/*
+      rm -rf ${PROJECTHOME}/tools/Builds/X2/*
+      mv -f ${PROJECTHOME}/Assets/XGame/Resources ${PROJECTHOME}/tools/Builds/Others/
+      
+      """
+    }
+    else
+    {
+
+      println("USE_AB==false, ignore")
+
+      if (USE_SMALL_PACK == "true")
+      {
+        echo "Remove StreammingPackage Resources"
+        //donot move Resources out, but call c# script to remove SmallPackage not needed resources
+        sh """
+          ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod X2AssetsBundleEditor.RemoveStreammingPackageResources -buildTarget ios -logFile
+        """
+      }
+      
+    }
+  }
+
+  stage('BuildIOSProject') {
+    
+    if (BUILD_APP == "false")
+    {
+      println("BUILD_APP==false, ignore")
+      return
+    }
+
+    def buildMethod = "BuildIOS"
+    if (DEBUG == "true")
+    {
+      buildMethod = "BuildIOSDebug"
+    }
+
+    sh """
+    ${UNITY} -quit -batchmode -projectPath ${PROJECTHOME} -executeMethod AutoBuild.${buildMethod} -outPath ${BUILDPATH} -buildTarget ios U3DAllowDebugging=${U3DAllowDebugging} U3DDevelopment=${U3DDevelopment} U3DConnectWithProfiler=${U3DConnectWithProfiler} U3DUSE_AB=${USE_AB} X2UseSmallPack=${USE_SMALL_PACK} -logFile
+    """
+  }
+
+  stage('MoveResourceBack') {
+
+    if (BUILD_APP == "false")
+    {
+      println("BUILD_APP==false, ignore")
+      return
+    }
+
+    if (USE_AB == "true")
+    {
+      sh """
+      #restore Resources removed for build AssetBundle
+      mv -f ${PROJECTHOME}/tools/Builds/Others/Resources ${PROJECTHOME}/Assets/XGame/ 
+      """
+    }
+    else
+    {
+      println("USE_AB==false, ignore")
+    }
+  }
+
+
+  stage('archive') {
+
+    if (BUILD_APP == "false")
+    {
+      println("BUILD_APP==false, ignore")
+      return
+    }
+
+
+    if (DEBUG == "true")
+    {
+      sh """
+    cd ${BUILDPATH}
+  security unlock-keychain -p test12345
+    ${XCODE_PATH} -sdk iphoneos archive -scheme Unity-iPhone -target Unity-iPhone -archivePath $ARCHIVE_PATH -configuration Release ENABLE_BITCODE=NO -jobs 8
+    """
+    }
+    else
+    {
+      sh """
+    cd ${BUILDPATH}
+  security unlock-keychain -p test12345
+    ${XCODE_PATH} -sdk iphoneos archive -scheme Unity-iPhone -target Unity-iPhone -archivePath $ARCHIVE_PATH -configuration Release ENABLE_BITCODE=NO CODE_SIGN_SYTLE="manual" PROVISIONING_PROFILE_SPECIFIER="${PROVISIONING_PROFILE_SPECIFIER}" CODE_SIGN_IDENTITY="${RELEASE_SIGN_CERT}" -jobs 8
+    """
+    }
+
+  sh """
+  cd ${BUILDPATH}
+  security unlock-keychain -p test12345
+  ${XCODE_PATH} -exportArchive -archivePath ${ARCHIVE_PATH}/ -exportPath ${BUILDHOME}/${FINAL_IPA_NAME} -exportOptionsPlist ${EXPORT_PLIST_PATH} -jobs 8
+  """
+  
+  }
+
+  stage('Import to SVN')
+  {
+    if (BUILD_APP == "false")
+    {
+      println("BUILD_APP==false, ignore")
+      return
+    } 
+    
+    sh """
+    #svn import ${BUILDHOME}/${FINAL_IPA_NAME} svn://172.16.1.9/ezfun/xgame2/build/dailybuild/ios/${JOB_NAME}_${FINAL_IPA_NAME} -m 'jenkins build import'
+    """
+  }
+
+  stage('FinalArchive') {
+    sh """
+    cd ${BUILDHOME}
+    #zip XCodeProject.zip export/* -r
+    #zip XGame2.xcarchive.zip XGame2.xcarchive/* -r
+    zip XGame2.dSYMs.zip XGame2.xcarchive/dSYMs/* -r
+    """
+    archive 'build/**/*.ipa,build/*.zip'
+  }
+
+}

@@ -1,4 +1,4 @@
-node('unity564 && android'){
+node('x2 && android'){
   def BUILD_DIR = "build"
   def UNITY
   def PROJECTHOME
@@ -30,15 +30,19 @@ node('unity564 && android'){
 
   stage('PrepareEnv')
   {
+	if (PROJ_REPO_URL == "svn://172.16.1.9/ezfun/xgame2/client/branchs/openversion_0_3_0_u3d565")
+    {
+		SRC_DIR = "xgame2_030_565"
+    }
+	UNITY = UNITY_565 + "/Contents/MacOS/Unity"
     PROJECTHOME = WORKSPACE + "/" + SRC_DIR
     BUILDHOME = WORKSPACE + "/" + BUILD_DIR
     BUILDPATH = WORKSPACE + "/" + "export"
     OUT_PATH = PROJECTHOME + "/tools/Builds"
-    UNITY = UNITY_564 + "/Contents/MacOS/Unity"
-
     BUILD_CACHE_HOME = PROJECTHOME + "/BuildCache"
 
     STREAM_PACK1_PATH = BUILD_CACHE_HOME + "/AssetBundles/" + PLATFORM + "/" + STREAM_PACK1_NAME + "/AssetBundles"
+	
   }
 
   stage('Checkout') {
@@ -98,8 +102,6 @@ node('unity564 && android'){
     #cp ${PROJECTHOME}/tools/Android/DataEyeDll.dll ${PROJECTHOME}/Assets/Plugins/Android/
     cp ${PROJECTHOME}/tools/Android/XGame2Util.dll ${PROJECTHOME}/Assets/Plugins/Android/
 
-    rm -rf ${BUILD_CACHE_HOME}
-
     #remove AssetBundles
     rm -rf ${PROJECTHOME}/Assets/StreamingAssets/AssetBundles/*
 
@@ -142,6 +144,7 @@ node('unity564 && android'){
 
       sh """
       touch ${PROJECTHOME}/Assets/StreamingAssets/IS_SMALL_PKG
+	  echo ${BUILD_NUMBER} > ${PROJECTHOME}/Assets/StreamingAssets/jobNum.cf
       """
     }
     else
@@ -155,8 +158,6 @@ node('unity564 && android'){
       fi
       """
     }
-    
-
   }
 
   stage('BuildAssetBundle') {
@@ -329,16 +330,46 @@ node('unity564 && android'){
       archiveNamePrefix = "XGame2_Android_Debug"
     }
 
-    FINAL_APK_NAME = archiveNamePrefix + "_" + BUILD_NUMBER + ".apk"
+    FINAL_APK_NAME = archiveNamePrefix + "_" + BUILD_NUMBER
     
     sh """
     cd ${PROJECTHOME}/tools
     echo ${MPLATFORM}
-    echo ${MPACKAGENAME}
-    python build_pack.py ${MPLATFORM} ${MPACKAGENAME} ${buildPackMode}
+	if [  "$NEED_TIANTUO_DFRY" == "true" ]; then
+	    rm -rf ${PROJECTHOME}/tools/SDK/${MPLATFORM}
+        svn up ${PROJECTHOME}/tools/SDK/${MPLATFORM}
+		python build_pack.py ${MPLATFORM} 1001 ${buildPackMode}
+		cp -f ${PROJECTHOME}/tools/SDK/${MPLATFORM}/app/build/outputs/apk/${finalApkName}.apk ${BUILDHOME}/${FINAL_APK_NAME}_dfry.apk
+	fi
+	
+	if [  "$NEED_TIANTUO_JLCB" == "true" ]; then
+		rm -rf ${PROJECTHOME}/tools/SDK/${MPLATFORM}
+        svn up ${PROJECTHOME}/tools/SDK/${MPLATFORM}
+		python build_pack.py ${MPLATFORM} 1002 ${buildPackMode}
+		cp -f ${PROJECTHOME}/tools/SDK/${MPLATFORM}/app/build/outputs/apk/${finalApkName}.apk ${BUILDHOME}/${FINAL_APK_NAME}_jlcb.apk
+	fi
+	
+	if [  "$NEED_TIANTUO_TD" == "true" ]; then
+		rm -rf ${PROJECTHOME}/tools/SDK/${MPLATFORM}
+        svn up ${PROJECTHOME}/tools/SDK/${MPLATFORM}
+		python build_pack.py ${MPLATFORM} 1003 ${buildPackMode}
+		cp -f ${PROJECTHOME}/tools/SDK/${MPLATFORM}/app/build/outputs/apk/${finalApkName}.apk ${BUILDHOME}/${FINAL_APK_NAME}_td.apk
+	fi
+    
+  if [  "$NEED_DEBUG_DFWS2" == "true" ]; then
+    rm -rf ${PROJECTHOME}/tools/SDK/${MPLATFORM}
+        svn up ${PROJECTHOME}/tools/SDK/${MPLATFORM}
+    python build_pack.py ${MPLATFORM} 1004 ${buildPackMode}
+    cp -f ${PROJECTHOME}/tools/SDK/${MPLATFORM}/app/build/outputs/apk/${finalApkName}.apk ${BUILDHOME}/${FINAL_APK_NAME}_dfws2.apk
+  fi
 
-    cp -f ${PROJECTHOME}/tools/SDK/${MPLATFORM}/app/build/outputs/apk/${finalApkName}.apk ${BUILDHOME}/${FINAL_APK_NAME}
-
+  if [  "$NEED_DEBUG_JINLI_DFWS2" == "true" ]; then
+    rm -rf ${PROJECTHOME}/tools/SDK/${MPLATFORM}
+        svn up ${PROJECTHOME}/tools/SDK/${MPLATFORM}
+    python build_pack.py ${MPLATFORM} 1005 ${buildPackMode}
+    cp -f ${PROJECTHOME}/tools/SDK/${MPLATFORM}/app/build/outputs/apk/${finalApkName}.apk ${BUILDHOME}/${FINAL_APK_NAME}_jinli_dfws2.apk
+  fi
+    
     rm -rf ${BUILDPATH}
     mv -f ${PROJECTHOME}/tools/SDK/${MPLATFORM} ${BUILDPATH}/
     """
@@ -353,12 +384,12 @@ node('unity564 && android'){
     }
     
     sh """
-    svn import ${BUILDHOME}/${FINAL_APK_NAME} svn://172.16.1.9/ezfun/xgame2/build/dailybuild/android/${JOB_NAME}_${FINAL_APK_NAME} -m 'jenkins build import'
+    #svn import ${BUILDHOME}/${FINAL_APK_NAME} svn://172.16.1.9/ezfun/xgame2/build/dailybuild/android/${JOB_NAME}_${FINAL_APK_NAME} -m 'jenkins build import'
     """
   }
 
   stage('FinalArchive') {
-    archive 'build/*.apk,build/*.zip,xgame2/BuildCache/**/*.json'
+    archive 'build/*.apk,build/*.zip'
   }
 
 }
